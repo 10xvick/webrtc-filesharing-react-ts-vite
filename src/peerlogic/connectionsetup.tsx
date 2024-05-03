@@ -13,8 +13,13 @@ export function PeerApp() {
       setid(id);
 
       peer.on("connection", (conn: DataConnection) => {
+        conn.on("open", () => {
+          console.log(conn);
+          conn.send("handshake");
+        });
+
         conn.on("data", (data: unknown) => {
-          console.log("connection made", data);
+          console.log("connection made:", data);
         });
       });
 
@@ -30,6 +35,10 @@ export function PeerApp() {
     }
     connection.on("open", () => {
       connection.send("Hi!! lets share some files!");
+
+      connection.on("data", (data) => {
+        console.log(data);
+      });
     });
   }
 
