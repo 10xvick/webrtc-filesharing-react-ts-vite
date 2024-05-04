@@ -11,6 +11,7 @@ export function PeerApp() {
     SetStateAction<Array<DataConnection>> | any
   >([]);
   const [message, setmessage] = useState<SetStateAction<string>>("");
+  const [file, setfile] = useState<SetStateAction<File>>();
 
   function onopen(connection: DataConnection) {
     connection.on("open", () => {
@@ -75,6 +76,13 @@ export function PeerApp() {
           {conn}
         </button>
       ))}
+      <hr />
+      <input
+        type="file"
+        onInput={(e: any) => {
+          setfile(e.target.value);
+        }}
+      />
     </>
   );
 }
