@@ -107,7 +107,9 @@ export function PeerApp() {
       <div>
         {uploads.map(({ url, name }) => (
           <div key={url}>
-            <a href={url}>{name}</a>
+            <a href={url} download={name}>
+              {name}
+            </a>
           </div>
         ))}
       </div>
