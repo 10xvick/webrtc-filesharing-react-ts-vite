@@ -12,6 +12,7 @@ export function PeerApp() {
   >([]);
   const [message, setmessage] = useState<SetStateAction<string>>("");
   const [file, setfile] = useState<SetStateAction<File>>();
+  const [uploads, setuploads] = useState<Array<string>>([]);
 
   function onopen(connection: DataConnection) {
     connection.on("open", () => {
@@ -19,8 +20,14 @@ export function PeerApp() {
       console.log("handshake", connection);
     });
 
-    connection.on("data", (data) => {
-      console.log(data);
+    connection.on("data", (data: any) => {
+      console.log("data", data);
+      if (data.file) {
+        const fileblob = new Blob([data.file], { type: data.type });
+        const url = URL.createObjectURL(fileblob);
+        setuploads([...uploads, url]);
+        console.log("blob", fileblob);
+      }
     });
   }
 
@@ -33,7 +40,8 @@ export function PeerApp() {
       });
     });
 
-    peer.on("error", (e) => {
+    peer.on("error", (e: Error) => {
+      alert(e.message);
       console.warn("webrtc error", e);
     });
   }, []);
@@ -71,6 +79,8 @@ export function PeerApp() {
           onClick={() => {
             const connection = connections[conn];
             connection.send(message);
+            if (file)
+              connection.send({ file: file, name: file.name, type: file.type });
           }}
         >
           {conn}
@@ -79,10 +89,20 @@ export function PeerApp() {
       <hr />
       <input
         type="file"
+        multiple
         onInput={(e: any) => {
-          setfile(e.target.value);
+          const file = e.target.files[0];
+          console.log("sending", file);
+          setfile(file);
         }}
       />
+      <div>
+        {uploads.map((url) => (
+          <div>
+            <a href={url}>{url}</a>
+          </div>
+        ))}
+      </div>
     </>
   );
 }
