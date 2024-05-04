@@ -11,7 +11,7 @@ export function PeerApp() {
     SetStateAction<Array<DataConnection>> | any
   >([]);
   const [message, setmessage] = useState<SetStateAction<string>>("");
-  const [file, setfile] = useState<SetStateAction<File>>();
+  const [file, setfile] = useState<File>();
   const [uploads, setuploads] = useState<Array<string>>([]);
 
   function onopen(connection: DataConnection) {
