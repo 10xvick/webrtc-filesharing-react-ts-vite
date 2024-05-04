@@ -1,4 +1,4 @@
-import React, { SetStateAction } from "react";
+import { SetStateAction } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { useEffect, useState } from "react";
 
