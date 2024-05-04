@@ -7,12 +7,14 @@ const peer = new Peer();
 export function PeerApp() {
   const [id, setid] = useState("");
   const [target, settarget] = useState("");
-  const [connections, setconnections] = useState<
-    SetStateAction<Array<DataConnection>> | any
-  >([]);
+  const [connections, setconnections] = useState<{
+    [key: string]: DataConnection;
+  }>({});
   const [message, setmessage] = useState<SetStateAction<string>>("");
   const [file, setfile] = useState<File>();
-  const [uploads, setuploads] = useState<Array<string>>([]);
+  const [uploads, setuploads] = useState<
+    Array<{ url: string; name: string; type: string }>
+  >([]);
 
   function onopen(connection: DataConnection) {
     connection.on("open", () => {
@@ -25,7 +27,10 @@ export function PeerApp() {
       if (data.file) {
         const fileblob = new Blob([data.file], { type: data.type });
         const url = URL.createObjectURL(fileblob);
-        setuploads([...uploads, url]);
+        setuploads([
+          ...uploads,
+          { url: url, name: data.name, type: data.type },
+        ]);
         console.log("blob", fileblob);
       }
     });
@@ -73,14 +78,17 @@ export function PeerApp() {
           setmessage(e.target?.value);
         }}
       />
-      {Object.keys(connections).map((conn) => (
+      {Object.keys(connections).map((conn: string) => (
         <button
           key={conn}
           onClick={() => {
             const connection = connections[conn];
             connection.send(message);
             if (file)
-              connection.send({ file: file, name: file.name, type: file.type });
+              connection.send(
+                { file: file, name: file.name, type: file.type },
+                true
+              );
           }}
         >
           {conn}
@@ -97,9 +105,9 @@ export function PeerApp() {
         }}
       />
       <div>
-        {uploads.map((url) => (
+        {uploads.map(({ url, name }) => (
           <div key={url}>
-            <a href={url}>{url}</a>
+            <a href={url}>{name}</a>
           </div>
         ))}
       </div>
