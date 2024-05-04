@@ -1,3 +1,4 @@
+import React from "react";
 import { PeerApp } from "./peerlogic/connectionsetup";
 
 function App() {
