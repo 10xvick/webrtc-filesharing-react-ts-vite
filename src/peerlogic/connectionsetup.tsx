@@ -3,7 +3,10 @@ import Peer, { DataConnection } from "peerjs";
 import { useEffect, useState } from "react";
 import { encodefilename } from "../utility/helper";
 
-const chunckeddata: any = {};
+const optimizer = {
+  chunks: {} as any,
+  chunksize: 1024 * 1024,
+};
 
 const peer = new Peer();
 
@@ -30,23 +33,18 @@ export function PeerApp() {
       if (data.file) {
         //=======================================================================================================
         if (data.key) {
-          const arr = (chunckeddata[data.key] ||= new Array(data.length));
-          console.log(data.file, data.index, data.length);
-          arr[data.index] = data.file;
-          if (data.index == data.length - 1) {
-            console.log(data, chunckeddata);
-            const chunks = chunckeddata[data.key];
+          optimizer.chunks[data.key] ||= {
+            buffer: new Uint8Array(Math.floor(data.length)),
+            length: 0,
+          };
 
-            const length =
-              (chunks.length - 1) * 10000 + chunks[data.length - 1].byteLength;
-            const mergedBuffer = new Uint8Array(length);
-            console.log(length, mergedBuffer.byteLength, mergedBuffer);
-            chunks.forEach((buffer: ArrayBuffer, i: number) => {
-              const uint8Array = new Uint8Array(buffer);
-              mergedBuffer.set(uint8Array, i * 10000);
-            });
-            console.log("final buffer", mergedBuffer.buffer);
-            const fileblob = new Blob([mergedBuffer.buffer], {
+          const download = optimizer.chunks[data.key];
+          download.buffer.set(data.file, data.offset);
+          download.length += data.file.byteLength;
+          setdownloadprogress((download.length / data.length) * 100);
+
+          if (download.length == data.length) {
+            const fileblob = new Blob([download.buffer.buffer], {
               type: data.type,
             });
             const url = URL.createObjectURL(fileblob);
@@ -111,48 +109,33 @@ export function PeerApp() {
             const connection = connections[conn];
             connection.send(message);
             if (file) {
-              if (file.size > 10000) {
-                const reader = new FileReader();
-                const chunksize = 10000;
+              const reader = new FileReader();
+              const chunksize = optimizer.chunksize;
 
-                reader.onload = (event) => {
-                  const data = event.target?.result as ArrayBuffer;
-                  const chunks: ArrayBuffer[] = [];
-                  for (let i = 0; i < data.byteLength; i += chunksize) {
-                    const chunk = data.slice(i, i + chunksize);
-                    chunks.push(chunk);
-                  }
+              reader.onload = (event) => {
+                console.log(event, "reader");
+                const data = event.target?.result as ArrayBuffer;
 
-                  chunks.forEach((chunk, i) => {
-                    connection.send({
-                      file: chunk,
-                      name: file.name,
-                      type: file.type,
-                      key: file.lastModified,
-                      index: i,
-                      totallength: data.byteLength,
-                      length: chunks.length, //----------------------------------------------------------------------------------------------------------
-                    });
+                for (let i = 0; i < data.byteLength; i += chunksize) {
+                  const chunk = data.slice(i, i + chunksize);
+                  connection.send({
+                    file: chunk,
+                    offset: i,
+                    key: file.lastModified,
+                    length: data.byteLength,
+                    type: file.type,
+                    name: file.name,
                   });
+                }
+              };
 
-                  console.log("chunks", chunks);
-                };
+              reader.onerror = () => {
+                console.log("error");
+              };
 
-                reader.onerror = () => {
-                  console.log("error");
-                };
+              reader.readAsArrayBuffer(file);
 
-                reader.readAsArrayBuffer(file);
-
-                console.log(file.size, "filesize", file.lastModified);
-                // const chunks = makechunks(file, 1000);
-                // console.log(chunks, file);
-              }
-              // const x = connection.send(
-              //   { file: file, name: file.name, type: file.type },
-              //   true
-              // );
-              // console.log("connection promise", x);
+              console.log(file.size, "filesize", file.lastModified);
             }
           }}
         >
@@ -170,29 +153,17 @@ export function PeerApp() {
         }}
       />
       <div>
+        {downloadprogress}% |
         {uploads.map(({ url, name }) => (
           <div key={url}>
-            <a href={url} download={encodefilename(name)}>
-              {name}
-            </a>
+            {
+              <a href={url} download={encodefilename(name)}>
+                {name}
+              </a>
+            }
           </div>
         ))}
       </div>
     </>
   );
-}
-
-function makechunks(arr: any[] | any, chunksize: number) {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i++) {
-    const chunk = [];
-    for (let j = 0; j < chunksize && i < arr.length; j++) {
-      chunk.push(arr[i]);
-      i++;
-    }
-    i--;
-    chunks.push(chunk);
-  }
-
-  return chunks;
 }
