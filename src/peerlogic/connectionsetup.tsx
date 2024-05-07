@@ -153,7 +153,7 @@ export function PeerApp() {
         }}
       />
       <div>
-        {downloadprogress}% |
+        {downloadprogress}% ||
         {uploads.map(({ url, name }) => (
           <div key={url}>
             {
