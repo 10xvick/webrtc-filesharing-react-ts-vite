@@ -31,8 +31,8 @@ export function Messages() {
         send
       </button>
       <>
-        {messages.map((msg) => (
-          <div>{msg}</div>
+        {messages.map((msg, i) => (
+          <div key={i}>{msg}</div>
         ))}
       </>
     </div>
