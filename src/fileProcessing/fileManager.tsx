@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import {
-  convertArrayBufferToUint8Array,
+  convertArrayBufferToUint8Array as convertFileToUint8Array,
   processReceivedData,
   sendfile,
 } from "./sendreceive";
@@ -13,6 +13,7 @@ export interface download {
   type: string;
   lastModified: number;
   byteLength: number;
+  data: Uint8Array;
 }
 
 export function Downloads() {
@@ -25,7 +26,7 @@ export function Downloads() {
       if (!data.file) return;
       const { url, progress }: { url: string; progress: number } =
         processReceivedData(data);
-
+      console.log(data, data.file);
       setfiles((uploads) => ({
         ...uploads,
         [data.key]: {
@@ -35,6 +36,7 @@ export function Downloads() {
           type: data.type,
           byteLength: data.byteLength,
           lastModified: data.key,
+          data: data.file,
         },
       }));
     });
@@ -48,26 +50,24 @@ export function Downloads() {
           <th>Type</th>
           <th>Modified</th>
           <th>Size (kb)</th>
-          <th>download All </th>
+          <th>Download All </th>
+          <th>Send All </th>
         </tr>
       </thead>
       <tbody>
-        {Object.entries(files).map(([key, value]: [string, download]) =>
-          DownloadsRow(value)
-        )}
+        {Object.entries(files).map(([key, value]: [string, download]) => (
+          <DownloadsRow download={value} />
+        ))}
       </tbody>
     </table>
   );
 }
 
-function DownloadsRow({
-  url,
-  progress,
-  name,
-  type,
-  lastModified,
-  byteLength,
-}: download) {
+function DownloadsRow({ download }: { download: download }) {
+  const { url, progress, name, type, lastModified, byteLength } = download;
+
+  const sendfile = useSendfile(download);
+
   return (
     <tr key={lastModified}>
       <td>{name}</td>
@@ -77,6 +77,7 @@ function DownloadsRow({
       <td>
         <a href={url}>{progress}</a>
       </td>
+      <td onClick={sendfile}>send</td>
     </tr>
   );
 }
@@ -88,10 +89,8 @@ export function Uploads() {
       <input
         type="file"
         multiple
-        onInput={(e: any) => {
-          const file = e.target.files[0];
-          console.log("uploading", file);
-          setfiles([...e.target.files] || []);
+        onChange={(e: any) => {
+          setfiles(Array.from(e.target.files));
         }}
       />
       <table>
@@ -104,27 +103,40 @@ export function Uploads() {
             <th>Send All </th>
           </tr>
         </thead>
-        <tbody>{files.map(UploadsRow)}</tbody>
+        <tbody>
+          {files.map((file) => (
+            <UploadsRow file={file} />
+          ))}
+        </tbody>
       </table>
     </div>
   );
 }
 
-function UploadsRow(file: File) {
-  const [data, setdata] = useState(new Uint8Array(0));
-  const connection = useContext(connectionCtx);
-
-  useEffect(() => {
-    convertArrayBufferToUint8Array(file).then(setdata);
-  }, []);
+function UploadsRow({ file }: any) {
+  const sendfile = useSendfile(file);
 
   return (
     <tr key={file.lastModified}>
       <td>{file.name}</td>
       <td>{file.type}</td>
       <td>{file.lastModified}</td>
-      <td>{data.byteLength / 1024}</td>
-      <td onClick={() => sendfile(file, data, connection)}>send</td>
+      <td>{file.size / 1024}</td>
+      <td onClick={sendfile}>send</td>
     </tr>
   );
 }
+
+function useSendfile(file: File | download) {
+  const [data, setdata] = useState(new Uint8Array(0));
+  const connection = useContext(connectionCtx);
+
+  useEffect(() => {
+    if (file instanceof File) convertFileToUint8Array(file).then(setdata);
+    else setdata(file.data);
+  }, [file]);
+
+  return () => sendfile(file, data, connection);
+}
+
+export function debug() {}

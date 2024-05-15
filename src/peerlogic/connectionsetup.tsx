@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { useEffect, useState } from "react";
-import { Downloads, Uploads } from "../fileProcessing/fileManager";
+import { Downloads, Uploads, debug } from "../fileProcessing/fileManager";
 import { Messages } from "../messenger/messenger";
 
 export const optimizer = {
@@ -42,6 +42,8 @@ export function PeerApp() {
       alert(e.message);
       console.warn("webrtc error", e);
     });
+
+    debug();
   }, []);
 
   function connect() {

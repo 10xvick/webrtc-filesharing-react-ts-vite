@@ -35,7 +35,7 @@ export function processReceivedData(data: {
 }
 
 export function sendfile(
-  file: File,
+  file: { lastModified: number; type: string; name: string },
   data: ArrayBuffer,
   connection: DataConnection
 ) {
@@ -45,8 +45,8 @@ export function sendfile(
     connection.send({
       file: chunk,
       offset: i,
-      key: file.lastModified,
       byteLength: data.byteLength,
+      key: file.lastModified,
       type: file.type,
       name: file.name,
     });
