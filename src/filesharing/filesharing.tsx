@@ -109,10 +109,7 @@ function useSendfile(file: iFile) {
     else setdata(file.data);
   }, [file]);
 
-  return () =>
-    connection
-      ? sendfile(file, data, connection)
-      : alert("connection unavailable");
+  return () => sendfile(file, data, connection);
 }
 
 export function debug() {}

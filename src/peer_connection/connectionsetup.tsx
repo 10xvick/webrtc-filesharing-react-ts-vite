@@ -72,7 +72,7 @@ export function PeerApp() {
         name="connections"
         onChange={(e: any) => setconnection(connections[e.target.value])}
       >
-        {Object.keys(connections).map((conn: string) => (
+        {Object.keys(connections).map((conn) => (
           <option key={conn} value={conn}>
             {conn}
           </option>
@@ -80,12 +80,16 @@ export function PeerApp() {
       </select>
       connection:{connection?.peer}
       <hr />
-      [Filesharing]
-      <Filesharing />
-      [Messages]
-      <Messages />
-      [VideoCalling]
-      <VideoCalling />
+      {connection && (
+        <div>
+          [Filesharing]
+          <Filesharing />
+          [Messages]
+          <Messages />
+          [VideoCalling]
+          <VideoCalling />
+        </div>
+      )}
     </connectionCtx.Provider>
   );
 }
