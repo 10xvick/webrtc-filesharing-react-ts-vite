@@ -1,8 +1,9 @@
 import { createContext } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { useEffect, useState } from "react";
-import { Downloads, Uploads, debug } from "../fileProcessing/fileManager";
+import { Filesharing, debug } from "../filesharing/filesharing";
 import { Messages } from "../messenger/messenger";
+import { VideoCalling } from "../videocalling/videocalling";
 
 export const optimizer = {
   chunks: {} as any,
@@ -79,12 +80,12 @@ export function PeerApp() {
       </select>
       connection:{connection?.peer}
       <hr />
-      [Uploads]
-      <Uploads />
-      [Downloads]
-      <Downloads />
+      [Filesharing]
+      <Filesharing />
       [Messages]
       <Messages />
+      [VideoCalling]
+      <VideoCalling />
     </connectionCtx.Provider>
   );
 }

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { connectionCtx } from "../peerlogic/connectionsetup";
+import { connectionCtx } from "../peer_connection/connectionsetup";
 
 export function Messages() {
   const connection = useContext(connectionCtx);

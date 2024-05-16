@@ -4,9 +4,9 @@ import {
   processReceivedData,
   sendfile,
 } from "./sendreceive";
-import { connectionCtx } from "../peerlogic/connectionsetup";
+import { connectionCtx } from "../peer_connection/connectionsetup";
 
-export interface download {
+export interface iFile {
   url: string;
   progress: number;
   name: string;
@@ -16,14 +16,16 @@ export interface download {
   data: Uint8Array;
 }
 
-export function Downloads() {
+export function Filesharing() {
   const connection = useContext(connectionCtx);
-  const [files, setfiles] = useState<{ [key: string]: download }>({});
+  const [files, setfiles] = useState<{ [key: string]: iFile }>({});
 
   useEffect(() => {
     if (!connection) return;
+
     connection.on("data", (data: any) => {
       if (!data.file) return;
+
       const { url, progress }: { url: string; progress: number } =
         processReceivedData(data);
       console.log(data, data.file);
@@ -43,33 +45,49 @@ export function Downloads() {
   }, [connection]);
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>File</th>
-          <th>Type</th>
-          <th>Modified</th>
-          <th>Size (kb)</th>
-          <th>Download All </th>
-          <th>Send All </th>
-        </tr>
-      </thead>
-      <tbody>
-        {Object.entries(files).map(([key, value]: [string, download]) => (
-          <DownloadsRow download={value} />
-        ))}
-      </tbody>
-    </table>
+    <div>
+      <input
+        type="file"
+        multiple
+        onChange={(e: any) => {
+          const newfiles = e.target.files;
+          setfiles((files) => {
+            for (let file of newfiles) {
+              files[file.lastModified] = file;
+              file.byteLength = file.size;
+            }
+            return { ...files };
+          });
+        }}
+      />
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Type</th>
+            <th>Modified</th>
+            <th>Size (kb)</th>
+            <th>Download All </th>
+            <th>Send All </th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.values(files).map((file) => (
+            <DownloadsRow key={file.lastModified} file={file} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
-function DownloadsRow({ download }: { download: download }) {
-  const { url, progress, name, type, lastModified, byteLength } = download;
+function DownloadsRow({ file }: { file: iFile }) {
+  const { url, progress, name, type, lastModified, byteLength } = file;
 
-  const sendfile = useSendfile(download);
+  const sendfile = useSendfile(file);
 
   return (
-    <tr key={lastModified}>
+    <tr>
       <td>{name}</td>
       <td>{type}</td>
       <td>{lastModified}</td>
@@ -82,52 +100,7 @@ function DownloadsRow({ download }: { download: download }) {
   );
 }
 
-export function Uploads() {
-  const [files, setfiles] = useState<File[]>([]);
-  return (
-    <div>
-      <input
-        type="file"
-        multiple
-        onChange={(e: any) => {
-          setfiles(Array.from(e.target.files));
-        }}
-      />
-      <table>
-        <thead>
-          <tr>
-            <th>File</th>
-            <th>Type</th>
-            <th>Modified</th>
-            <th>Size (kb)</th>
-            <th>Send All </th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map((file) => (
-            <UploadsRow file={file} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function UploadsRow({ file }: any) {
-  const sendfile = useSendfile(file);
-
-  return (
-    <tr key={file.lastModified}>
-      <td>{file.name}</td>
-      <td>{file.type}</td>
-      <td>{file.lastModified}</td>
-      <td>{file.size / 1024}</td>
-      <td onClick={sendfile}>send</td>
-    </tr>
-  );
-}
-
-function useSendfile(file: File | download) {
+function useSendfile(file: File | iFile) {
   const [data, setdata] = useState(new Uint8Array(0));
   const connection = useContext(connectionCtx);
 

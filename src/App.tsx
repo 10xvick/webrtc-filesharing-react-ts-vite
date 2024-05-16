@@ -1,6 +1,6 @@
 import { createContext, useReducer } from "react";
-import { PeerApp } from "./peerlogic/connectionsetup";
 import { DataConnection } from "peerjs";
+import { PeerApp } from "./peer_connection/connectionsetup";
 
 const store = {
   connection: null as any,

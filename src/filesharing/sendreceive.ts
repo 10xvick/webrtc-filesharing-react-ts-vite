@@ -1,5 +1,5 @@
 import { DataConnection } from "peerjs";
-import { optimizer } from "../peerlogic/connectionsetup";
+import { optimizer } from "../peer_connection/connectionsetup";
 import { concatenateUint8Arrays } from "../utility/helper";
 
 export function processReceivedData(data: {
