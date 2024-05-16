@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { connectionCtx } from "../peer_connection/connectionsetup";
 import { DataConnection } from "peerjs";
 

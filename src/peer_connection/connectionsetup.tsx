@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import React, { createContext } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { useEffect, useState } from "react";
 import { Filesharing, debug } from "../filesharing/filesharing";

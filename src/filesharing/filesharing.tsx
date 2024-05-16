@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   convertArrayBufferToUint8Array as convertFileToUint8Array,
   processReceivedData,
@@ -28,7 +28,7 @@ export function Filesharing() {
 
       const { url, progress }: { url: string; progress: number } =
         processReceivedData(data);
-      console.log(data, data.file);
+
       setfiles((uploads) => ({
         ...uploads,
         [data.key]: {
@@ -100,7 +100,7 @@ function DownloadsRow({ file }: { file: iFile }) {
   );
 }
 
-function useSendfile(file: File | iFile) {
+function useSendfile(file: iFile) {
   const [data, setdata] = useState(new Uint8Array(0));
   const connection = useContext(connectionCtx);
 
@@ -109,7 +109,10 @@ function useSendfile(file: File | iFile) {
     else setdata(file.data);
   }, [file]);
 
-  return () => sendfile(file, data, connection);
+  return () =>
+    connection
+      ? sendfile(file, data, connection)
+      : alert("connection unavailable");
 }
 
 export function debug() {}
