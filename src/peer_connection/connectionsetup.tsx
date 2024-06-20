@@ -82,12 +82,16 @@ export function PeerApp() {
       <hr />
       {connection && (
         <div>
+          <hr/>
           [Filesharing]
           <Filesharing />
+          <hr/>
           [Messages]
           <Messages />
+          <hr/>
           [VideoCalling]
           <VideoCalling />
+          <hr/>
         </div>
       )}
     </connectionCtx.Provider>

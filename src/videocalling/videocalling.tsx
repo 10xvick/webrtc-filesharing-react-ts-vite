@@ -5,5 +5,15 @@ import { DataConnection } from "peerjs";
 export function VideoCalling() {
   const connection = useContext<DataConnection>(connectionCtx);
   useEffect(() => {}, []);
-  return <>video</>;
+  return <>video
+  <div>local video
+
+  </div>
+  </>;
+}
+
+
+
+function VideoOutput(){
+  
 }
