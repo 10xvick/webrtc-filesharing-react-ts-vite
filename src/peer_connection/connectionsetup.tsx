@@ -23,9 +23,16 @@ export function PeerApp() {
   const [connection, setconnection] = useState<DataConnection>();
 
   function onopen(connection: DataConnection) {
+    console.log(
+      "connected",
+      connection.peer,
+      connection.provider.id,
+      connection.peerConnection,
+      connection
+    );
     connection.on("open", () => {
-      setconnections({ ...connections, [connection.peer]: connection });
       setconnection(connection);
+      setconnections({ ...connections, [connection.peer]: connection });
       console.log("handshake", connection);
     });
   }
@@ -51,7 +58,6 @@ export function PeerApp() {
     const connection = peer.connect(target);
     if (!connection)
       return alert("could not connect. make sure target id is correct");
-
     onopen(connection);
   }
 
@@ -78,20 +84,22 @@ export function PeerApp() {
           </option>
         ))}
       </select>
-      connection:{connection?.peer}
+      <div>
+        connection from {connection?.provider?.id} to {connection?.peer}
+      </div>
       <hr />
       {connection && (
         <div>
-          <hr/>
+          <hr />
           [Filesharing]
           <Filesharing />
-          <hr/>
+          <hr />
           [Messages]
           <Messages />
-          <hr/>
+          <hr />
           [VideoCalling]
           <VideoCalling />
-          <hr/>
+          <hr />
         </div>
       )}
     </connectionCtx.Provider>
