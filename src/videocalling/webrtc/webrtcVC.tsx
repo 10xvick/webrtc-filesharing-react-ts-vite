@@ -9,6 +9,7 @@ import { InputButton } from "../../widgets/components/inputbutton";
 import { MediaSharing } from "./VC/MediaSharing";
 import { Messenger_wrtc } from "./MSG/messenger";
 import { useNegotiateUsingPeerjsCloud } from "./connectionsetup/negotiation/negotiateUsingPeerjsConnection";
+import { NegotiateManually } from "./connectionsetup/negotiation/negotiateManually";
 
 export const wrtc = WebRTCInit();
 
@@ -28,7 +29,7 @@ export const WEBRTCVC = () => {
   return (
     <div>
       connection status : {signalingstate}
-      {/* <NegotiateManually /> */}
+      <NegotiateManually />
       <Messenger_wrtc />
       <MediaSharing />
     </div>

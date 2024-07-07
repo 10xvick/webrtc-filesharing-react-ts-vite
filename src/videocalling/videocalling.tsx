@@ -1,10 +1,4 @@
-import {
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useContext, useEffect, useState } from "react";
 import { connectionCtx } from "../peer_connection/connectionsetup";
 import { DataConnection, MediaConnection } from "peerjs";
 import { useLocalStream } from "./streamManager";
