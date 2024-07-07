@@ -29,7 +29,7 @@ const configs = {
 };
 
 export const WebRTCInit = () => {
-  const peerconnection = new RTCPeerConnection();
+  const peerconnection = new RTCPeerConnection(configs.server);
 
   //   for (let key in peerconnection) {
   //     if (key[0] + key[1] == "on") {

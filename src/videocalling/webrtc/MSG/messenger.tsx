@@ -25,7 +25,6 @@ export function Messenger_wrtc() {
         }}
       />
       <>
-        {JSON.stringify(messages)}|
         {messages.map((msg, i) => (
           <div key={i}>{msg}</div>
         ))}
