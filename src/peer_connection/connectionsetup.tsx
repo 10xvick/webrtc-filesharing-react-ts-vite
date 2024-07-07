@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { Filesharing, debug } from "../filesharing/filesharing";
 import { Messages } from "../messenger/messenger";
 import { VideoCalling } from "../videocalling/videocalling";
+import { WEBRTCVC } from "../videocalling/webrtc/webrtcVC";
+
+export const connectionparams = {
+  initiator: false,
+};
 
 export const optimizer = {
   chunks: {} as any,
@@ -11,6 +16,7 @@ export const optimizer = {
 };
 
 const peer = new Peer();
+console.log("peer", peer);
 
 export const connectionCtx = createContext<DataConnection | any>(null);
 
@@ -59,6 +65,7 @@ export function PeerApp() {
     if (!connection)
       return alert("could not connect. make sure target id is correct");
     onopen(connection);
+    connectionparams.initiator = true;
   }
 
   return (
@@ -97,9 +104,12 @@ export function PeerApp() {
           [Messages]
           <Messages />
           <hr />
+          <hr />
           [VideoCalling]
           <VideoCalling />
           <hr />
+          [VideoCalling_webrtc]
+          <WEBRTCVC />
         </div>
       )}
     </connectionCtx.Provider>

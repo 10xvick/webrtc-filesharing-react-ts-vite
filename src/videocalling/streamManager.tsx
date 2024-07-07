@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { VideoElement } from "./videoElement";
+import { VideoElement } from "../widgets/components/videoElement";
 
-const initialtrackflags_ = {
+export const initialtrackflags_ = {
   camA: false,
   camV: false,
   screenA: false,
@@ -20,14 +20,17 @@ export const useLocalStream = (
   const [trackflags, settrackflags] = useState(initialtrackflags);
 
   const fetchstreams = async () => {
-    const meainstream = new MediaStream();
+    stream.getTracks().forEach((e) => {
+      e.stop();
+      stream.removeTrack(e);
+    });
 
     if (trackflags.camA || trackflags.camV) {
       const camstream = await navigator.mediaDevices.getUserMedia({
         video: trackflags.camV,
         audio: trackflags.camA,
       });
-      camstream?.getTracks().forEach((e) => meainstream.addTrack(e));
+      camstream?.getTracks().forEach((e) => stream.addTrack(e));
     }
 
     if (trackflags.screenA || trackflags.screenV) {
@@ -35,11 +38,10 @@ export const useLocalStream = (
         video: trackflags.screenV,
         audio: trackflags.screenA,
       });
-      screenstream?.getTracks().forEach((e) => meainstream.addTrack(e));
+      screenstream?.getTracks().forEach((e) => stream.addTrack(e));
     }
-    // stop old stream tracks
-    stream.getTracks().forEach((e) => e.stop());
-    setstream(meainstream);
+
+    setstream(stream);
   };
 
   useEffect(() => {
@@ -51,25 +53,4 @@ export const useLocalStream = (
   };
 
   return [stream, settrackflags, trackflags, closestream];
-};
-
-export const VideoPerTrack = ({ stream }: { stream: MediaStream }) => {
-  const [streams, setstreams] = useState<MediaStream[]>([]);
-
-  useEffect(() => {
-    if (!stream) return;
-    const streams: MediaStream[] = [];
-    stream.getVideoTracks().forEach((e) => {
-      streams.push(new MediaStream([e]));
-    });
-    setstreams(streams);
-  }, [stream]);
-
-  return (
-    <div>
-      {streams.map((e) => (
-        <VideoElement key={e.id} srcObject={e} />
-      ))}
-    </div>
-  );
 };

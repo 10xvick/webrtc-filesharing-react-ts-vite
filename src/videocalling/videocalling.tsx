@@ -7,7 +7,8 @@ import {
 } from "react";
 import { connectionCtx } from "../peer_connection/connectionsetup";
 import { DataConnection, MediaConnection } from "peerjs";
-import { VideoPerTrack, useLocalStream } from "./streamManager";
+import { useLocalStream } from "./streamManager";
+import { VideoPerTrack } from "../widgets/components/videoElement";
 
 export function VideoCalling() {
   const connection = useContext<DataConnection>(connectionCtx);
@@ -20,7 +21,31 @@ export function VideoCalling() {
 
   const callevents = (call: MediaConnection) => {
     if (!call) return;
-    console.log("call updated", call);
+    console.log("call updated", call.dataChannel, call);
+
+    call.peerConnection.ontrack = (e) => {
+      console.log("track found event", e);
+      setRemoteStream(e.streams[0]);
+    };
+
+    call.peerConnection.ondatachannel = (e) => {
+      console.log("data channel found event", e);
+    };
+
+    if (call.dataChannel)
+      call.dataChannel.onopen = (dataChannel) => {
+        console.log(
+          "data channel found",
+          dataChannel,
+          connection.label,
+          call.peerConnection
+        );
+        call.peerConnection.ontrack = (e) => {
+          console.log("track found event", e);
+          setRemoteStream(e.streams[0]);
+        };
+      };
+
     call.on("stream", (stream) => {
       console.log("remote stream received", stream.getTracks().length);
       setRemoteStream(stream);
@@ -52,14 +77,28 @@ export function VideoCalling() {
     if (!connection) return;
     connection.provider.on("call", (call) => {
       console.log("call requested", localStream.getTracks().length);
-      call.answer(localStream);
+      const stream = new MediaStream();
+      call.answer(stream);
+
+      const addtrack = async () => {
+        const track = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+        call.peerConnection.addTrack(track.getTracks()[0]);
+        // stream.addTrack(track.getTracks()[0]);
+        console.log("track added", track.getTracks().length);
+      };
+      setTimeout(addtrack, 5000);
+
       resetcall(call);
     });
   }, [connection]);
 
   useEffect(() => {
     if (localStream.getTracks().length === 0 && calls.length === 0) return;
-    makeCall();
+    // call?.answer(localStream);
+    // makeCall();
   }, [localStream]);
 
   useEffect(() => {
@@ -104,22 +143,6 @@ export function VideoCalling() {
       remotestreams {remoteStream.getTracks().length}
       <VideoPerTrack stream={remoteStream} />
       {/* <VideoList streams={remoteStream} /> */}
-    </div>
-  );
-}
-
-function VideoList({ streams }: { streams: { [key: string]: MediaStream } }) {
-  useEffect(() => {
-    Object.values(streams).map((e) =>
-      e.getTracks().forEach((e) => console.log("track label:", e.kind))
-    );
-    console.log(streams);
-  }, [streams]);
-  return (
-    <div>
-      {Object.keys(streams).map((id) => (
-        <VideoPerTrack key={id} stream={streams[id]} />
-      ))}
     </div>
   );
 }
